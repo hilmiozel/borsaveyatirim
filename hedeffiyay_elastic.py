@@ -5,7 +5,7 @@ import requests
 
 USER = "elastic"
 PASS = "bitnami"
-es = Elasticsearch('http://192.168.1.35:9200', basic_auth=(USER, PASS), verify_certs=False)
+es = Elasticsearch('http://172.18.0.2:9200', basic_auth=(USER, PASS), verify_certs=False)
 
 
 # Define constants
