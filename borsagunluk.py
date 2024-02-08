@@ -1,7 +1,7 @@
 from bs4 import BeautifulSoup
 import requests
 from datetime import datetime, timedelta
-from elasticsearch import Elasticsearch
+#from elasticsearch import Elasticsearch
 
 # Define constants
 URL = 'https://www.isyatirim.com.tr/tr-tr/analiz/hisse/Sayfalar/default.aspx'
@@ -9,7 +9,7 @@ URL1_TEMP = 'https://www.isyatirim.com.tr/tr-tr/analiz/hisse/Sayfalar/sirket-kar
 URL2_TEMP = 'https://www.yapikredi.com.tr/yatirimci-kosesi/hisse-senedi/{hisse}'
 USER = "elastic"
 PASS = "bitnami"
-es = Elasticsearch('http://172.18.0.2:9200', basic_auth=(USER, PASS), verify_certs=False)
+#es = Elasticsearch('http://172.18.0.2:9200', basic_auth=(USER, PASS), verify_certs=False)
 
 # URL'den sayfa içeriğini getirin
 response = requests.get(URL)
@@ -65,6 +65,7 @@ for hisse_kodu in tum_hisseler:
                             toplam_hacim=int(columns[1].text.strip().split(',')[0].replace('.', ''))
                         if columns[0].text.strip() == 'A. Ortalama':
                             a_ortalama=float(columns[1].text.strip().replace('.', '').replace(',', '.')) if columns[1].text.strip() else 0.0
+                
                 if toplam_islem and toplam_hacim and a_ortalama:
                     doc1 = {
                         "timestamp": datetime.now(),
@@ -73,10 +74,9 @@ for hisse_kodu in tum_hisseler:
                         'gunluk_toplam_hacim': toplam_hacim,
                         'a_ortalama': a_ortalama
                     }
-                    
-                    resp = es.index(index="borsa_yapikredi_daily", document=doc1)
+                    print("Doc1:",doc1)
+                    #resp = es.index(index="borsa_yapikredi_daily", document=doc1)
                     break
-        
     # URL'den sayfa içeriğini getirin
     response = requests.get(URL1)
     html_content = response.text
@@ -130,9 +130,16 @@ for hisse_kodu in tum_hisseler:
                     'raportipi': result
                 }
                 
-            resp = es.index(index="borsa_is_finansaloranlartahmin", document=doc2)
+            #resp = es.index(index="borsa_is_finansaloranlartahmin", document=doc2)
+            print("Doc2:",doc2)
             
     doc3=''
+    yurtdisi_fk_prim_oran=''
+    yurtdisi_pddd_prim_oran=''
+    yurtdisi_fdfavök_prim_oran=''
+    tarihsel_fk_prim_oran=''
+    tarihsel_pddd_prim_oran=''
+    tarihsel_fdfavök_prim_oran=''
     if yurtdisiiskonto_table:
         rows = yurtdisiiskonto_table.find_all('tr')
         for row in rows[2:]:  # İlk satır başlıkları içerdiğinden atlanır
@@ -169,7 +176,7 @@ for hisse_kodu in tum_hisseler:
                 tarihsel_pddd_prim_oran = float(columns[6].text.strip().replace('.', '').replace(',', '.')) if columns[6].text.strip().startswith(('-','0', '1', '2', '3', '4', '5', '6', '7', '8', '9')) else 0.0
     
     if tarihselortalamalar_table or yurtdisiiskonto_table:
-        
+    
         doc3 = {
                 "timestamp": datetime.now(),
                 'kod': kod,
@@ -184,7 +191,6 @@ for hisse_kodu in tum_hisseler:
                 'yurtdisi_fdfavök_prim_oran': yurtdisi_fdfavök_prim_oran,
                 'tarihsel_fdfavök_prim_oran': tarihsel_fdfavök_prim_oran,
             }
-            
-    if doc3:
-        resp = es.index(index="borsa_is_iskontolar", document=doc3)
     
+    if doc3:
+        print("Doc3:",doc3)

@@ -27,13 +27,14 @@ hisse_kodu_menu.pack()
 # Grafiği çizdirmek için bir fonksiyon tanımlayın
 def plot_graph():
     # Hisse senedi verilerini sorgulayın
-    cursor.execute(f'''SELECT tarih, oneri_kurum_sayisi, ort_hedef FROM {TABLE_NAME} WHERE kod = ?''', (selected_hisse_kodu.get(),))
+    cursor.execute(f'''SELECT tarih, oneri_kurum_sayisi, ort_hedef, son_kapanis FROM {TABLE_NAME} WHERE kod = ?''', (selected_hisse_kodu.get(),))
     results = cursor.fetchall()
 
     # Tarih, öneri kurum sayısı ve ortalama hedef fiyat verilerini ayırın
     tarihler = [row[0] for row in results]
     oneri_kurum_sayilari = [row[1] for row in results]
     ortalama_hedef_fiyat = [row[2] for row in results]
+    kapanis_fiyat = [row[3] for row in results]
 
     # Grafiği çizdirin
     fig, ax1 = plt.subplots(figsize=(10, 6))
@@ -48,6 +49,7 @@ def plot_graph():
     # Sağdaki y eksenine ortalama hedef fiyat verilerini çizdirin
     ax2 = ax1.twinx()
     ax2.plot(tarihler, ortalama_hedef_fiyat, color='orange', marker='s', linestyle='-', label='Ortalama Hedef Fiyat')
+    ax2.plot(tarihler, kapanis_fiyat, color='red', marker='s', linestyle='-', label='Kapanış Fiyat')
     ax2.set_ylabel('Ortalama Hedef Fiyat', color='orange')
     ax2.tick_params(axis='y', labelcolor='orange')
 
