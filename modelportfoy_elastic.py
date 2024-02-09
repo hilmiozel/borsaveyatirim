@@ -1,15 +1,17 @@
-from datetime import datetime
-from elasticsearch import Elasticsearch
 from bs4 import BeautifulSoup
 import requests
+import sqlite3
+from datetime import datetime, timedelta
+from elasticsearch import Elasticsearch
+import matplotlib.pyplot as plt
 
 USER = "elastic"
 PASS = "bitnami"
 es = Elasticsearch('http://172.18.0.2:9200', basic_auth=(USER, PASS), verify_certs=False)
 
-
 # Define constants
-URL = "https://www.borsaveyatirim.com/bist-hisse-onerileri-ve-hedef-fiyatlari"
+URL = "https://www.borsaveyatirim.com/araci-kurum-hisse-onerileri"
+SEARCH_TABLE_ID = "myTable2"
 
 # URL'den sayfa içeriğini getirin
 response = requests.get(URL)
@@ -24,16 +26,16 @@ tables = soup.find_all("table")
 # Hedef tabloyu bulun
 target_table = None
 for table in tables:
-    for content in table.contents:
-        if 'Güncelleme' in content:
-            tarih_str = content.split(': ')[1]
-            tarih = datetime.strptime(tarih_str, '%d/%m/%Y').strftime('%d%m%Y')
+    attrs = table.attrs
+    if 'id' in attrs and 'class' in attrs:
+        if attrs['id'] == SEARCH_TABLE_ID and 'tablesorter' in attrs['class']:
             target_table = table
+            for content in table.contents:
+                if 'Güncelleme' in content:
+                    tarih_str = content.split(': ')[1]
+                    tarih = datetime.strptime(tarih_str, '%d/%m/%Y')
             break
 
-# Değişim verilerini tutacak bir liste oluşturun
-onceki_kurum_sayisi = ''
-onceki_ort_hedef = ''
 # Tablodaki her bir satırı işleyin ve veritabanına ekleyin
 if target_table:
     rows = target_table.find_all('tr')
@@ -41,23 +43,19 @@ if target_table:
         columns = row.find_all('td')
         kod = columns[1].text.strip()  # Kod sütunu
         hisse_adi = columns[2].text.strip()  # Hisse adı sütunu
-        oneri_kurum_sayisi = int(columns[3].text.strip()) # Öneri kurum sayısı sütunu
+        modele_ekleyen_kurum_sayisi = int(columns[3].text.strip()) # Öneri kurum sayısı sütunu
         son_kapanis = float(columns[4].text.strip())  # Son kapanış sütunu
-        ort_hedef = float(columns[5].text.strip())  # Ortalama Hedef sütunu
-        ort_getiri = float(columns[6].text.strip())  # Ortalama Hedef sütunu
-        
+        tarih = datetime.now().strftime("%d%m%Y")  # GGAAYYYY formatında tarih
         
         doc = {
             "timestamp": datetime.now(),
             'guncelleme_tarihi': tarih,
             'kod': kod,
             'hisse_adi': hisse_adi,
-            'oneri_kurum_sayisi': oneri_kurum_sayisi,
+            'modele_ekleyen_kurum_sayisi': modele_ekleyen_kurum_sayisi,
             'son_kapanis': son_kapanis,
-            'ort_hedef': ort_hedef,
-            'ort_getiri': ort_getiri
         }
         
         
-        resp = es.index(index="borsa_araci_kurum_hedef_fiyat", document=doc)
+        resp = es.index(index="borsa_araci_kurum_modelportfoy_eklenme", document=doc)
         print(resp)

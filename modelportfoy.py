@@ -27,6 +27,10 @@ for table in tables:
     if 'id' in attrs and 'class' in attrs:
         if attrs['id'] == SEARCH_TABLE_ID and 'tablesorter' in attrs['class']:
             target_table = table
+            for content in table.contents:
+                if 'Güncelleme' in content:
+                    tarih_str = content.split(': ')[1]
+                    tarih = datetime.strptime(tarih_str, '%d/%m/%Y').strftime('%d%m%Y')
             break
 
 # Veritabanı bağlantısı oluşturun
