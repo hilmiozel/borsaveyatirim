@@ -52,7 +52,7 @@ if target_table:
             'guncelleme_tarihi': tarih,
             'kod': kod,
             'hisse_adi': hisse_adi,
-            'oneri_kurum_sayisi': oneri_kurum_sayisi,
+            'hedeffiyat_veren_kurum_sayisi': oneri_kurum_sayisi,
             'son_kapanis': son_kapanis,
             'ort_hedef': ort_hedef,
             'ort_getiri': ort_getiri
