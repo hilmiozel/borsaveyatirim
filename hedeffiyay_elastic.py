@@ -61,5 +61,5 @@ if target_table:
         }
         
         
-        resp = es.index(index="borsa", document=doc)
+        resp = es.index(index="borsa_araci_kurum_hedef_fiyat", document=doc)
         print(resp)
