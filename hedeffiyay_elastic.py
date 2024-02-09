@@ -27,7 +27,7 @@ for table in tables:
     for content in table.contents:
         if 'Güncelleme' in content:
             tarih_str = content.split(': ')[1]
-            tarih = datetime.strptime(tarih_str, '%d/%m/%Y').strftime('%d%m%Y')
+            tarih = datetime.strptime(tarih_str, '%d/%m/%Y')
             target_table = table
             break
 
