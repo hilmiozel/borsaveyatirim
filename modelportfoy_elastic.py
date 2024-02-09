@@ -43,7 +43,6 @@ if target_table:
         hisse_adi = columns[2].text.strip()  # Hisse adı sütunu
         modele_ekleyen_kurum_sayisi = int(columns[3].text.strip()) # Öneri kurum sayısı sütunu
         son_kapanis = float(columns[4].text.strip())  # Son kapanış sütunu
-        tarih = datetime.now().strftime("%d%m%Y")  # GGAAYYYY formatında tarih
         
         doc = {
             "timestamp": datetime.now(),
