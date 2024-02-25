@@ -7,66 +7,61 @@ import pandas as pd
 
 USER = "elastic"
 PASS = "bitnami"
-es = Elasticsearch('http://192.168.1.35:9200', basic_auth=(USER, PASS), verify_certs=False)
+es = Elasticsearch('http://172.18.0.2:9200', basic_auth=(USER, PASS), verify_certs=False)
 
 cwd = os.getcwd()
 
-f = open(cwd +"\\yfinance\\ticker-tracklist", "r")
+f = open(cwd +"/yfinance/ticker-tracklist", "r")
 ticker_file_list = f.read()
 
 ticker_file_list = ticker_file_list.splitlines()
 print (ticker_file_list)
 
-for ticker in ticker_file_list:
-    print( "Ticker asking to Yahoo: " + ticker)
-    ticker = yf.Ticker(ticker)
+for ticker_name in ticker_file_list:
+    print( "Ticker asking to Yahoo: " + ticker_name)
+    ticker = yf.Ticker(ticker_name)
 
-    # get all stock info
-    # Daily
-    doc = ticker.info
-    now=datetime.now()
-
-    doc["timestamp"]= now.isoformat()
-
-    resp = es.index(index="borsa_yfinance_ticker_info", document=doc)
-
-    print(resp.body)
-    time.sleep(1)
 
     income_doc = ticker.income_stmt
-    income_doc = pd.DataFrame(income_doc)
-    resp = es.index(index="borsa_yfinance_ticker_income_stmt", document=income_doc)
-    time.sleep(1)
-
-    q_income_doc = ticker.quarterly_income_stmt
-    q_income_doc["timestamp"]= now.isoformat()
-    resp = es.index(index="borsa_yfinance_ticker_quarterly_income_stmt", document=q_income_doc)
-    print(resp.body)
-    time.sleep(1)
-
     balance_doc = ticker.balance_sheet
-    balance_doc["timestamp"]= now.isoformat()
-    resp = es.index(index="borsa_yfinance_ticker_balance_sheet", document=balance_doc)
-    print(resp.body)
-    time.sleep(1)
-    
-    quarterly_balance_sheet = ticker.quarterly_balance_sheet
-    quarterly_balance_sheet["timestamp"]= now.isoformat()
-    resp = es.index(index="borsa_yfinance_ticker_quarterly_balance_sheet", document=quarterly_balance_sheet)
-    print(resp.body)
-    time.sleep(1)
-    
     cashflow = ticker.cashflow
-    cashflow["timestamp"]= now.isoformat()
-    resp = es.index(index="borsa_yfinance_ticker_cashflow", document=cashflow)
-    print(resp.body)
-    time.sleep(1)
     
-    quarterly_cashflow = ticker.cashflow
-    quarterly_cashflow["timestamp"]= now.isoformat()
-    resp = es.index(index="borsa_yfinance_ticker_quarterly_cashflow", document=quarterly_cashflow)
-    print(resp.body)
-    time.sleep(1)
+    
+    
+    income_doc = income_doc.fillna(0)
+    income_doc = income_doc.to_dict()
+    for record in income_doc:
+        income_doc[record]["timestamp"] = str(record)
+        income_doc[record]["symbol"] = ticker_name
+        
+        resp = es.index(index="borsa_yfinance_ticker_quarterly_income_stmt", document=income_doc[record])
+        print(resp.body)
+        time.sleep(1)
+
+    
+    
+    balance_doc = balance_doc.fillna(0)
+    balance_doc = balance_doc.to_dict()
+    for record in balance_doc:
+        balance_doc[record]["timestamp"] = str(record)
+        balance_doc[record]["symbol"] = ticker_name
+        
+        resp = es.index(index="borsa_yfinance_ticker_quarterly_income_stmt", document=balance_doc[record])
+        print(resp.body)
+        time.sleep(1)
+    
+    
+    
+    cashflow = cashflow.fillna(0)
+    cashflow = cashflow.to_dict()
+    for record in cashflow:
+        cashflow[record]["timestamp"] = str(record)
+        cashflow[record]["symbol"] = ticker_name
+        
+        resp = es.index(index="borsa_yfinance_ticker_quarterly_income_stmt", document=cashflow[record])
+        print(resp.body)
+        time.sleep(1)   
+ 
 
 time.sleep(5)
 
