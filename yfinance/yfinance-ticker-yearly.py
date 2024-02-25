@@ -3,6 +3,8 @@ from elasticsearch import Elasticsearch
 from datetime import datetime, timedelta
 import os
 import time
+import warnings
+warnings.simplefilter(action='ignore', category=FutureWarning)
 import pandas as pd
 
 USER = "elastic"
@@ -34,7 +36,7 @@ for ticker_name in ticker_file_list:
         income_doc[record]["timestamp"] = str(record)
         income_doc[record]["symbol"] = ticker_name
         
-        resp = es.index(index="borsa_yfinance_ticker_quarterly_income_stmt", document=income_doc[record])
+        resp = es.index(index="borsa_yfinance_ticker_yearly_income_stmt", document=income_doc[record])
         print(resp.body)
         time.sleep(1)
 
@@ -46,7 +48,7 @@ for ticker_name in ticker_file_list:
         balance_doc[record]["timestamp"] = str(record)
         balance_doc[record]["symbol"] = ticker_name
         
-        resp = es.index(index="borsa_yfinance_ticker_quarterly_income_stmt", document=balance_doc[record])
+        resp = es.index(index="borsa_yfinance_ticker_yearly_balance_sheet", document=balance_doc[record])
         print(resp.body)
         time.sleep(1)
     
@@ -58,7 +60,7 @@ for ticker_name in ticker_file_list:
         cashflow[record]["timestamp"] = str(record)
         cashflow[record]["symbol"] = ticker_name
         
-        resp = es.index(index="borsa_yfinance_ticker_quarterly_income_stmt", document=cashflow[record])
+        resp = es.index(index="borsa_yfinance_ticker_yearly_cashflow", document=cashflow[record])
         print(resp.body)
         time.sleep(1)   
  

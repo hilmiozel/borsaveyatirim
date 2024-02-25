@@ -1,6 +1,8 @@
 import yfinance as yf
 from elasticsearch import Elasticsearch
 from datetime import datetime, timedelta
+import warnings
+warnings.simplefilter(action='ignore', category=FutureWarning)
 import os
 import time
 import pandas as pd
@@ -26,6 +28,8 @@ for ticker_name in ticker_file_list:
 
 
     q_income_doc = ticker.quarterly_income_stmt
+    
+    
     q_income_doc = q_income_doc.fillna(0)
     q_income_doc = q_income_doc.to_dict()
     for record in q_income_doc:
@@ -44,7 +48,7 @@ for ticker_name in ticker_file_list:
         quarterly_balance_sheet[record]["timestamp"] = str(record)
         quarterly_balance_sheet[record]["symbol"] = ticker_name
         
-        resp = es.index(index="borsa_yfinance_ticker_quarterly_income_stmt", document=quarterly_balance_sheet[record])
+        resp = es.index(index="borsa_yfinance_ticker_quarterly_balance_sheet", document=quarterly_balance_sheet[record])
         print(resp.body)
         time.sleep(1)
     
@@ -56,7 +60,7 @@ for ticker_name in ticker_file_list:
         quarterly_cashflow[record]["timestamp"] = str(record)
         quarterly_cashflow[record]["symbol"] = ticker_name
         
-        resp = es.index(index="borsa_yfinance_ticker_quarterly_income_stmt", document=quarterly_cashflow[record])
+        resp = es.index(index="borsa_yfinance_ticker_quarterly_cashflow", document=quarterly_cashflow[record])
         print(resp.body)
         time.sleep(1)
       
