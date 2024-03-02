@@ -15,7 +15,7 @@ USER = "elastic"
 PASS = "bitnami"
 es = Elasticsearch('http://172.18.0.2:9200', basic_auth=(USER, PASS), verify_certs=False)
 # GEMINI API Key
-genai.configure(api_key="AIzaSyDqDiFhDmd1Na4iSXs2J1qT1CAXorfc5g8")
+genai.configure(api_key="")
 
 cwd = os.getcwd()
 
