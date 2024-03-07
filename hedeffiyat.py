@@ -70,11 +70,12 @@ if target_table:
                     AND tarih != ?  
                   ORDER BY tarih DESC 
                   LIMIT 1''', (kod, tarih))
-        if cursor.fetchone():
-            onceki_kurum_sayisi, onceki_ort_hedef = cursor.fetchone()
+        result = cursor.fetchone()
+        if result is not None: 
+            onceki_kurum_sayisi, onceki_ort_hedef = result
         if onceki_kurum_sayisi:
-            onceki_kurum_sayisi = int(onceki_kurum_sayisi[0])
-            onceki_ort_hedef = float(onceki_ort_hedef[0])
+            onceki_kurum_sayisi = int(onceki_kurum_sayisi)
+            onceki_ort_hedef = float(onceki_ort_hedef)
         else:
             onceki_kurum_sayisi = 0
             onceki_ort_hedef = 0
@@ -84,7 +85,7 @@ if target_table:
         degisim_ort_hedef = ort_hedef - onceki_ort_hedef
         
         # Değişim verisini table_data listesine ekleyin
-        if degisim_kurum_sayisi != 0 or degisim_ort_hedef !=0:
+        if degisim_kurum_sayisi != 0:
             table_data.append([kod, degisim_kurum_sayisi, degisim_ort_hedef])
         
         cursor.execute(f'''SELECT * FROM {TABLE_NAME} WHERE kod = ? AND tarih = ?''', (kod, tarih))
@@ -112,9 +113,9 @@ colors = []
 # table_data listesindeki her bir öğeyi kontrol edin ve renkleri atayın
 # Define color mapping for changes
 
-color_mapping = { (1, 1): 'green', (1, 0): 'yellow', (1, -1): 'red',
-                  (0, 1): 'green', (0, 0): 'yellow', (0, -1): 'red',
-                  (-1, 1): 'green', (-1, 0): 'yellow', (-1, -1): 'red' }
+color_mapping = { (1, 1): 'green', (1, 0): 'green', (1, -1): 'green',
+                  (0, 1): 'blue', (0, 0): 'yellow', (0, -1): 'orange',
+                  (-1, 1): 'red', (-1, 0): 'red', (-1, -1): 'red' }
 
 # Tablo oluşturma
 fig, ax = plt.subplots()
@@ -133,9 +134,11 @@ for i, (kod, deg1, deg2) in enumerate(table_data, start=1):
     table[(i, 2)].set_facecolor(color2)
 
 # Create a legend for the colors
-legend_elements = [Line2D([0], [0], marker='s', color='w', label='Positive Change', markerfacecolor='green'),
-                   Line2D([0], [0], marker='s', color='w', label='Zero Change', markerfacecolor='yellow'),
-                   Line2D([0], [0], marker='s', color='w', label='Negative Change', markerfacecolor='red')]
+legend_elements = [Line2D([0], [0], marker='s', color='w', label='Kurum sayısında pozitif değişim', markerfacecolor='green'),
+                   Line2D([0], [0], marker='s', color='w', label='Kurum sayısında ve Hedef fiyatta değişim yok', markerfacecolor='yellow'),
+                   Line2D([0], [0], marker='s', color='w', label='Hedef fiyatta pozitif değişim', markerfacecolor='blue'),
+                   Line2D([0], [0], marker='s', color='w', label='Hedef fiyatta negatif değişim', markerfacecolor='orange'),
+                   Line2D([0], [0], marker='s', color='w', label='Kurum sayısında negatif değişim', markerfacecolor='red')]
 
 # Add the legend to the plot
 plt.legend(handles=legend_elements, loc='upper left')
